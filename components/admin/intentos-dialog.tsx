@@ -46,6 +46,7 @@ interface IntentosDialogProps {
 
 export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
     const [open, setOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState<string>("SENTADILLA")
     const [intentos, setIntentos] = useState<Intento[]>([])
     const [levantamientos, setLevantamientos] = useState<Levantamiento[]>([])
     const [loading, setLoading] = useState(false)
@@ -53,7 +54,7 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
 
     // New attempt state
     const [newWeight, setNewWeight] = useState<string>("")
-    const [addingTo, setAddingTo] = useState<TipoMovimiento | null>(null)
+    // We don't strictly need addingTo if we rely on activeTab, but let's keep it clean
 
     // Levantamiento Form State
     const [planningWeights, setPlanningWeights] = useState<{ [key in TipoMovimiento]?: { w1: string, w2: string, w3: string } }>({})
@@ -98,6 +99,35 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
             fetchData()
         }
     }, [open, fetchData])
+
+    // Auto-fill weight when tab or data changes
+    useEffect(() => {
+        if (!activeTab || loading) return
+
+        const tipo = activeTab as TipoMovimiento
+        const attempts = intentos.filter(i => i.tipo === tipo)
+        const nextAttemptNum = attempts.length + 1
+
+        if (nextAttemptNum > 3) {
+            setNewWeight("")
+            return
+        }
+
+        const plan = planningWeights[tipo]
+        if (plan) {
+            const key = `w${nextAttemptNum}` as keyof typeof plan
+            const plannedWeight = plan[key]
+            if (plannedWeight) {
+                setNewWeight(plannedWeight)
+            } else {
+                setNewWeight("")
+            }
+        } else {
+            setNewWeight("")
+        }
+
+    }, [activeTab, intentos, planningWeights, loading])
+
 
     const handleSaveLevantamiento = async (tipo: TipoMovimiento) => {
         setError(null)
@@ -153,9 +183,6 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
     }
 
     const handleCreateIntento = async (tipo: TipoMovimiento) => {
-        console.log("handleCreateIntento", tipo)
-        console.log("Current newWeight:", newWeight, "AddingTo:", addingTo)
-
         if (!newWeight) {
             toast.error("El peso es requerido")
             return
@@ -178,9 +205,9 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                 peso: parseFloat(newWeight)
             })
             toast.success("Intento registrado")
-            setNewWeight("")
-            setAddingTo(null)
-            fetchData() // Refresh both
+            // Don't clear newWeight here instantly, let the effect handle it or keep current
+            // Actually, fetching data will trigger the effect again for the next attempt
+            fetchData()
         } catch (error: any) {
             console.error("Error creating intento:", error)
             toast.error(error.message || "Error al registrar intento")
@@ -348,9 +375,8 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                                 id={`weight-${tipo}`}
                                 placeholder="0.0"
                                 step="2.5"
-                                value={addingTo === tipo ? newWeight : ""}
+                                value={newWeight}
                                 onChange={(e) => {
-                                    setAddingTo(tipo)
                                     setNewWeight(e.target.value)
                                 }}
                             />
@@ -381,7 +407,7 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                     </div>
                 )}
 
-                <Tabs defaultValue="SENTADILLA" className="w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="SENTADILLA">Sentadilla</TabsTrigger>
                         <TabsTrigger value="BANCA">Banca</TabsTrigger>

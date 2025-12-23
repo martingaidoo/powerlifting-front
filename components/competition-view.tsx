@@ -6,7 +6,6 @@ import {
   type LiftType,
   type WeightCategory,
   LIFT_ORDER,
-  MOCK_ATHLETES,
 } from "@/lib/competition-data"
 import { CompetitionHeader } from "./competition-header"
 import { CurrentAthleteSpotlight } from "./current-athlete-spotlight"
@@ -15,6 +14,9 @@ import { LiftTransition } from "./lift-transition"
 import { FinalResults } from "./final-results"
 import { RoundRankingsOverlay } from "./round-rankings-overlay"
 import { DisciplineWinnerOverlay } from "./discipline-winner-overlay"
+import { IntentoService, ResultadoIntento, TipoMovimiento } from "@/lib/services/intento-service"
+import { fetchCompetitionData } from "@/lib/actions/competition-actions"
+import { toast } from "sonner"
 
 interface CompetitionViewProps {
   category?: WeightCategory
@@ -22,19 +24,31 @@ interface CompetitionViewProps {
 }
 
 export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
-  // Initialize athletes from mock data (filter if category provided, else all)
-  const [athletes, setAthletes] = useState<Athlete[]>(() => {
-    const source = category
-      ? MOCK_ATHLETES.filter(a => a.category === category)
-      : MOCK_ATHLETES
+  const [athletes, setAthletes] = useState<Athlete[]>([])
+  const [loading, setLoading] = useState(true)
 
-    return source.map((a) => ({
-      ...a,
-      squat: a.squat.map((att) => ({ ...att })),
-      bench: a.bench.map((att) => ({ ...att })),
-      deadlift: a.deadlift.map((att) => ({ ...att })),
-    }))
-  })
+  // Fetch data on mount
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true)
+      // Hardcoded competition ID 1 for now, or pass as prop
+      const data = await fetchCompetitionData(1)
+
+      // Filter if category is provided
+      const filtered = category ? data.filter(a => a.category === category) : data
+
+      setAthletes(filtered)
+    } catch (error) {
+      console.error(error)
+      toast.error("Error al cargar datos de la competencia")
+    } finally {
+      setLoading(false)
+    }
+  }, [category])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   const [currentLift, setCurrentLift] = useState<LiftType>("squat")
   const [currentRound, setCurrentRound] = useState(1)
@@ -48,53 +62,99 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
 
   // Sort athletes by their attempt weight for the current lift and round
   const sortedAthletes = useMemo(() => {
-    return [...athletes].sort((a, b) => {
-      const weightA = a[currentLift][currentRound - 1]?.weight || 0
-      const weightB = b[currentLift][currentRound - 1]?.weight || 0
+    return [...athletes]
+      .filter(a => {
+        const weight = a[currentLift][currentRound - 1]?.weight || 0
+        return weight > 0
+      })
+      .sort((a, b) => {
+        const weightA = a[currentLift][currentRound - 1]?.weight || 0
+        const weightB = b[currentLift][currentRound - 1]?.weight || 0
 
-      if (weightA !== weightB) {
-        return weightA - weightB
-      }
+        if (weightA !== weightB) {
+          return weightA - weightB
+        }
 
-      // Tie-breaker: body weight
-      return a.bodyWeight - b.bodyWeight
-    })
+        // Tie-breaker: body weight
+        return a.bodyWeight - b.bodyWeight
+      })
   }, [athletes, currentLift, currentRound])
 
   const currentAthlete = sortedAthletes[currentAthleteIndex]
 
   // Handle attempt result
   const handleAttemptResult = useCallback(
-    (isValid: boolean) => {
+    async (isValid: boolean) => {
       if (!currentAthlete) return
 
-      setAthletes((prevAthletes) => {
-        return prevAthletes.map((athlete) => {
-          if (athlete.id !== currentAthlete.id) return athlete
+      const attemptIndex = currentRound - 1
+      const attempt = currentAthlete[currentLift][attemptIndex]
+      const result = isValid ? ResultadoIntento.EXITO : ResultadoIntento.FALLO
+      const mapTipo: Record<LiftType, TipoMovimiento> = {
+        squat: TipoMovimiento.SENTADILLA,
+        bench: TipoMovimiento.BANCA,
+        deadlift: TipoMovimiento.MUERTO
+      }
 
-          const updatedAthlete = { ...athlete }
-          const attempts = [...updatedAthlete[currentLift]]
-          attempts[currentRound - 1] = {
-            ...attempts[currentRound - 1],
-            status: isValid ? "valid" : "invalid",
-          }
-          updatedAthlete[currentLift] = attempts
+      try {
+        // Optimistic update
+        setAthletes((prevAthletes) => {
+          return prevAthletes.map((athlete) => {
+            if (athlete.id !== currentAthlete.id) return athlete
 
-          // Update best lift if valid
-          if (isValid) {
-            const weight = attempts[currentRound - 1].weight
-            if (currentLift === "squat" && weight > updatedAthlete.bestSquat) {
-              updatedAthlete.bestSquat = weight
-            } else if (currentLift === "bench" && weight > updatedAthlete.bestBench) {
-              updatedAthlete.bestBench = weight
-            } else if (currentLift === "deadlift" && weight > updatedAthlete.bestDeadlift) {
-              updatedAthlete.bestDeadlift = weight
+            const updatedAthlete = { ...athlete }
+            const attempts = [...updatedAthlete[currentLift]]
+            attempts[attemptIndex] = {
+              ...attempts[attemptIndex],
+              status: isValid ? "valid" : "invalid",
             }
-          }
+            updatedAthlete[currentLift] = attempts
 
-          return updatedAthlete
+            // Update best lift if valid
+            if (isValid) {
+              const weight = attempts[attemptIndex].weight
+              if (currentLift === "squat" && weight > updatedAthlete.bestSquat) {
+                updatedAthlete.bestSquat = weight
+              } else if (currentLift === "bench" && weight > updatedAthlete.bestBench) {
+                updatedAthlete.bestBench = weight
+              } else if (currentLift === "deadlift" && weight > updatedAthlete.bestDeadlift) {
+                updatedAthlete.bestDeadlift = weight
+              }
+              updatedAthlete.total = updatedAthlete.bestSquat + updatedAthlete.bestBench + updatedAthlete.bestDeadlift
+            }
+
+            return updatedAthlete
+          })
         })
-      })
+
+        // Backend Update
+        if (attempt.id) {
+          await IntentoService.update(attempt.id, { resultado: result })
+        } else {
+          // Create new attempt
+          const newIntento = await IntentoService.create({
+            participanteId: parseInt(currentAthlete.id),
+            tipo: mapTipo[currentLift],
+            numero: currentRound,
+            peso: attempt.weight
+          })
+          // Update local state with the new ID just in case
+          setAthletes((prev) => prev.map(a => {
+            if (a.id !== currentAthlete.id) return a
+            const updated = { ...a }
+            updated[currentLift][attemptIndex].id = newIntento.id
+            return updated
+          }))
+        }
+        toast.success(`Intento ${isValid ? "Válido" : "Nulo"} registrado`)
+
+      } catch (error) {
+        console.error("Error saving result:", error)
+        toast.error("Error al guardar resultado")
+        // Revert optimistic update? (Ideally yes, skipping for brevity but recommended)
+        loadData() // Reload data to sync
+        return // Don't match forward if error?
+      }
 
       // Move to next athlete
       setTimeout(() => {
@@ -110,7 +170,7 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
         }
       }, 1000)
     },
-    [currentAthlete, currentAthleteIndex, sortedAthletes.length, currentRound, currentLift],
+    [currentAthlete, currentAthleteIndex, sortedAthletes.length, currentRound, currentLift, loadData],
   )
 
   const handleRoundRankingsComplete = useCallback(() => {

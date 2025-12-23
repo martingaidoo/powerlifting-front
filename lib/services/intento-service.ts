@@ -38,7 +38,16 @@ export interface UpdateIntentoDto {
 
 export const IntentoService = {
     findByParticipante: async (participanteId: number): Promise<Intento[]> => {
-        const res = await fetch(`${API_URL}/participante/${participanteId}`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/participante/${participanteId}`);
+        if (!res.ok) throw new Error("Failed to fetch intentos");
+        return res.json();
+    },
+
+    getAll: async (competenciaId?: number): Promise<Intento[]> => {
+        const params = new URLSearchParams();
+        if (competenciaId) params.append('competenciaId', competenciaId.toString());
+
+        const res = await fetch(`${API_URL}?${params.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch intentos");
         return res.json();
     },

@@ -5,6 +5,7 @@ export type AttemptStatus = "pending" | "valid" | "invalid" | "current"
 export type WeightCategory = "83kg" | "93kg" | "105kg" | "105+kg"
 
 export interface Attempt {
+  id?: number
   weight: number
   status: AttemptStatus
 }

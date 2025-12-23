@@ -22,28 +22,29 @@ export interface CreateLevantamientoDto {
 const API_URL = "http://localhost:3001/levantamiento"
 
 export const LevantamientoService = {
-    async create(dto: CreateLevantamientoDto): Promise<Levantamiento> {
-        console.log("[LevantamientoService.create] Request:", dto)
-        const response = await fetch(API_URL, {
+    create: async (data: CreateLevantamientoDto): Promise<Levantamiento> => {
+        const res = await fetch(`${API_URL}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(dto),
-        })
-
-        if (!response.ok) {
-            const error = await response.json()
-            console.error("[LevantamientoService.create] Error:", error)
-            throw new Error(error.message || "Error al crear levantamiento")
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+            const error = await res.json()
+            throw new Error(error.message || "Failed to create levantamiento");
         }
-
-        const data = await response.json()
-        console.log("[LevantamientoService.create] Response:", data)
-        return data
+        return res.json();
     },
 
-    async findByParticipante(participanteId: number): Promise<Levantamiento[]> {
+    getAll: async (competenciaId?: number): Promise<Levantamiento[]> => {
+        const params = new URLSearchParams();
+        if (competenciaId) params.append('competenciaId', competenciaId.toString());
+
+        const res = await fetch(`${API_URL}?${params.toString()}`);
+        if (!res.ok) throw new Error("Failed to fetch levantamientos");
+        return res.json();
+    },
+
+    findByParticipante: async (participanteId: number): Promise<Levantamiento[]> => {
         const response = await fetch(`${API_URL}/participante/${participanteId}`)
 
         if (!response.ok) {
