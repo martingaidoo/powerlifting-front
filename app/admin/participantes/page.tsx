@@ -27,12 +27,13 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, ArrowLeft } from "lucide-react"
+import { Plus, Pencil, Trash2, ArrowLeft, Dumbbell } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { ParticipanteService, Participante } from "@/lib/services/participante-service"
 import { CompetenciaService, Competencia } from "@/lib/services/competencia-service"
 import { ParticipanteDialog } from "@/components/admin/participante-dialog"
+import { IntentosDialog } from "@/components/admin/intentos-dialog"
 
 export default function AdminParticipantesPage() {
     const [participantes, setParticipantes] = useState<Participante[]>([])
@@ -141,7 +142,7 @@ export default function AdminParticipantesPage() {
                             <TableHead>Edad</TableHead>
                             <TableHead>Peso</TableHead>
                             <TableHead>Altura</TableHead>
-                            <TableHead>Competencia ID</TableHead> {/* Ideally we show name, but let's stick to ID or map it if possible, backend doesn't seem to include relation by default in getAll based on previous file content but let's see */}
+                            <TableHead>Competencia ID</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -163,6 +164,14 @@ export default function AdminParticipantesPage() {
                                     <TableCell>{participante.competenciaId}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
+                                            <IntentosDialog
+                                                participante={participante}
+                                                trigger={
+                                                    <Button variant="ghost" size="icon" title="Gestionar Intentos">
+                                                        <Dumbbell className="h-4 w-4" />
+                                                    </Button>
+                                                }
+                                            />
                                             <Button
                                                 variant="ghost"
                                                 size="icon"

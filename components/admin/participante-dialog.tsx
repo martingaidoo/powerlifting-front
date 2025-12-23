@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { toast } from "sonner"
 import { Competencia, CompetenciaService } from "@/lib/services/competencia-service"
 import { ParticipanteService, CreateParticipanteDto, Participante } from "@/lib/services/participante-service"
@@ -39,6 +40,9 @@ const formSchema = z.object({
     altura: z.string().optional().transform(val => val ? parseFloat(val) : undefined),
     edad: z.string().optional().transform(val => val ? parseInt(val) : undefined),
     competenciaId: z.string().min(1, "La competencia es requerida").transform(val => parseInt(val)),
+    participaSentadilla: z.boolean().default(true),
+    participaBanca: z.boolean().default(true),
+    participaMuerto: z.boolean().default(true),
 })
 
 interface ParticipanteDialogProps {
@@ -82,6 +86,9 @@ export function ParticipanteDialog({
             altura: participante?.altura?.toString() || "",
             edad: participante?.edad?.toString() || "",
             competenciaId: participante?.competenciaId?.toString() || "",
+            participaSentadilla: participante?.participaSentadilla ?? true,
+            participaBanca: participante?.participaBanca ?? true,
+            participaMuerto: participante?.participaMuerto ?? true,
         },
     })
 
@@ -95,23 +102,25 @@ export function ParticipanteDialog({
                 altura: participante?.altura?.toString() || "",
                 edad: participante?.edad?.toString() || "",
                 competenciaId: participante?.competenciaId?.toString() || "",
+                participaSentadilla: participante?.participaSentadilla ?? true,
+                participaBanca: participante?.participaBanca ?? true,
+                participaMuerto: participante?.participaMuerto ?? true,
             })
         }
     }, [participante, isOpen, form])
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            // Because of transforms, types might be tricky, but Zod handles the output type.
-            // However, types need to match API expectation.
-            // values.peso is number | undefined after transform.
-
             const payload: CreateParticipanteDto = {
                 nombre: values.nombre,
                 apellido: values.apellido,
                 peso: values.peso as number | undefined,
                 altura: values.altura as number | undefined,
                 edad: values.edad as number | undefined,
-                competenciaId: values.competenciaId as unknown as number, // Zod transforms string to number
+                competenciaId: values.competenciaId as unknown as number,
+                participaSentadilla: values.participaSentadilla,
+                participaBanca: values.participaBanca,
+                participaMuerto: values.participaMuerto,
             }
 
             if (participante) {
@@ -188,6 +197,59 @@ export function ParticipanteDialog({
                                             <Input type="number" placeholder="175" {...field} />
                                         </FormControl>
                                         <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="participaSentadilla"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>Participa en Sentadilla</FormLabel>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="participaBanca"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>Participa en Press de Banca</FormLabel>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="participaMuerto"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>Participa en Peso Muerto</FormLabel>
+                                        </div>
                                     </FormItem>
                                 )}
                             />
