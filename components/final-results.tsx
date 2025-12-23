@@ -7,7 +7,7 @@ import { BarbellIcon } from "./barbell-icon"
 
 interface FinalResultsProps {
   athletes: Athlete[]
-  category: WeightCategory
+  category?: WeightCategory
   onRestart: () => void
 }
 
@@ -18,7 +18,7 @@ export function FinalResults({ athletes, category, onRestart }: FinalResultsProp
 
   const rankedAthletes = getRankings(athletes)
   const champion = rankedAthletes[0]
-  const categoryInfo = WEIGHT_CATEGORIES.find((c) => c.id === category)
+  const categoryInfo = category ? WEIGHT_CATEGORIES.find((c) => c.id === category) : null
 
   useEffect(() => {
     const timer1 = setTimeout(() => setShowPodium(true), 500)
@@ -63,21 +63,21 @@ export function FinalResults({ athletes, category, onRestart }: FinalResultsProp
 
       {/* Header */}
       <div
-        className={`relative z-10 text-center mb-12 transition-all duration-1000 ${
-          showPodium ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
-        }`}
+        className={`relative z-10 text-center mb-12 transition-all duration-1000 ${showPodium ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-8"
+          }`}
       >
         <span className="text-xs tracking-[0.4em] text-accent uppercase">Resultados Finales</span>
-        <h1 className="text-4xl md:text-6xl font-bold mt-4 tracking-tight">CATEGORÍA {categoryInfo?.maxWeight} KG</h1>
+        <h1 className="text-4xl md:text-6xl font-bold mt-4 tracking-tight">
+          {categoryInfo ? `CATEGORÍA ${categoryInfo.maxWeight} KG` : "RESULTADOS GENERALES"}
+        </h1>
         <BarbellIcon className="w-32 mx-auto mt-4 text-accent/50" />
       </div>
 
       {/* Champion spotlight */}
       {champion && (
         <div
-          className={`relative z-10 text-center mb-12 p-8 md:p-12 border-4 border-accent bg-accent/10 max-w-2xl w-full transition-all duration-1000 ${
-            showChampion ? "opacity-100 scale-100" : "opacity-0 scale-90"
-          }`}
+          className={`relative z-10 text-center mb-12 p-8 md:p-12 border-4 border-accent bg-accent/10 max-w-2xl w-full transition-all duration-1000 ${showChampion ? "opacity-100 scale-100" : "opacity-0 scale-90"
+            }`}
         >
           <div className="absolute -top-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-accent text-accent-foreground font-bold tracking-widest uppercase">
             Campeón
@@ -119,9 +119,8 @@ export function FinalResults({ athletes, category, onRestart }: FinalResultsProp
 
       {/* Full results table */}
       <div
-        className={`relative z-10 w-full max-w-4xl transition-all duration-1000 ${
-          showTable ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-        }`}
+        className={`relative z-10 w-full max-w-4xl transition-all duration-1000 ${showTable ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
       >
         <div className="border border-border/30 bg-card/30">
           <div className="p-4 border-b border-border/30 bg-secondary/30">
@@ -137,15 +136,14 @@ export function FinalResults({ athletes, category, onRestart }: FinalResultsProp
                 <div key={athlete.id} className="p-4 flex items-center gap-4">
                   {/* Rank */}
                   <div
-                    className={`w-10 h-10 flex items-center justify-center font-bold ${
-                      rank === 1
-                        ? "bg-accent text-accent-foreground text-xl"
-                        : rank === 2
-                          ? "bg-muted-foreground text-background"
-                          : rank === 3
-                            ? "bg-primary/50 text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground"
-                    }`}
+                    className={`w-10 h-10 flex items-center justify-center font-bold ${rank === 1
+                      ? "bg-accent text-accent-foreground text-xl"
+                      : rank === 2
+                        ? "bg-muted-foreground text-background"
+                        : rank === 3
+                          ? "bg-primary/50 text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
                   >
                     {rank}
                   </div>
@@ -192,9 +190,8 @@ export function FinalResults({ athletes, category, onRestart }: FinalResultsProp
       {/* Restart button */}
       <button
         onClick={onRestart}
-        className={`relative z-10 mt-12 px-8 py-4 border-2 border-primary text-primary font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-all duration-300 ${
-          showTable ? "opacity-100" : "opacity-0"
-        }`}
+        className={`relative z-10 mt-12 px-8 py-4 border-2 border-primary text-primary font-bold tracking-widest uppercase hover:bg-primary hover:text-primary-foreground transition-all duration-300 ${showTable ? "opacity-100" : "opacity-0"
+          }`}
       >
         Nueva Competencia
       </button>

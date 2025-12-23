@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useMemo } from "react"
 import {
   type Athlete,
   type LiftType,
   type WeightCategory,
   LIFT_ORDER,
-  getAthletesByCategory,
+  MOCK_ATHLETES,
 } from "@/lib/competition-data"
 import { CompetitionHeader } from "./competition-header"
 import { CurrentAthleteSpotlight } from "./current-athlete-spotlight"
@@ -17,14 +17,18 @@ import { RoundRankingsOverlay } from "./round-rankings-overlay"
 import { DisciplineWinnerOverlay } from "./discipline-winner-overlay"
 
 interface CompetitionViewProps {
-  category: WeightCategory
+  category?: WeightCategory
   onRestart: () => void
 }
 
 export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
-  // Initialize athletes from mock data for this category
+  // Initialize athletes from mock data (filter if category provided, else all)
   const [athletes, setAthletes] = useState<Athlete[]>(() => {
-    return getAthletesByCategory(category).map((a) => ({
+    const source = category
+      ? MOCK_ATHLETES.filter(a => a.category === category)
+      : MOCK_ATHLETES
+
+    return source.map((a) => ({
       ...a,
       squat: a.squat.map((att) => ({ ...att })),
       bench: a.bench.map((att) => ({ ...att })),
@@ -42,14 +46,31 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
   const [showDisciplineWinner, setShowDisciplineWinner] = useState(false)
   const [completedDiscipline, setCompletedDiscipline] = useState<LiftType | null>(null)
 
-  const currentAthlete = athletes[currentAthleteIndex]
+  // Sort athletes by their attempt weight for the current lift and round
+  const sortedAthletes = useMemo(() => {
+    return [...athletes].sort((a, b) => {
+      const weightA = a[currentLift][currentRound - 1]?.weight || 0
+      const weightB = b[currentLift][currentRound - 1]?.weight || 0
+
+      if (weightA !== weightB) {
+        return weightA - weightB
+      }
+
+      // Tie-breaker: body weight
+      return a.bodyWeight - b.bodyWeight
+    })
+  }, [athletes, currentLift, currentRound])
+
+  const currentAthlete = sortedAthletes[currentAthleteIndex]
 
   // Handle attempt result
   const handleAttemptResult = useCallback(
     (isValid: boolean) => {
+      if (!currentAthlete) return
+
       setAthletes((prevAthletes) => {
-        return prevAthletes.map((athlete, idx) => {
-          if (idx !== currentAthleteIndex) return athlete
+        return prevAthletes.map((athlete) => {
+          if (athlete.id !== currentAthlete.id) return athlete
 
           const updatedAthlete = { ...athlete }
           const attempts = [...updatedAthlete[currentLift]]
@@ -77,7 +98,7 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
 
       // Move to next athlete
       setTimeout(() => {
-        if (currentAthleteIndex < athletes.length - 1) {
+        if (currentAthleteIndex < sortedAthletes.length - 1) {
           // Next athlete in current round
           setCurrentAthleteIndex((prev) => prev + 1)
         } else if (currentRound < 3) {
@@ -89,7 +110,7 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
         }
       }, 1000)
     },
-    [currentAthleteIndex, athletes.length, currentRound, currentLift],
+    [currentAthlete, currentAthleteIndex, sortedAthletes.length, currentRound, currentLift],
   )
 
   const handleRoundRankingsComplete = useCallback(() => {
@@ -161,18 +182,18 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
               />
             )}
 
-            {currentAthleteIndex < athletes.length - 1 && (
+            {currentAthleteIndex < sortedAthletes.length - 1 && (
               <div className="mt-6 p-4 border border-border/30 bg-card/30">
                 <div className="text-xs text-muted-foreground uppercase tracking-wider mb-2">Siguiente Atleta</div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-semibold">{athletes[currentAthleteIndex + 1].name}</span>
+                    <span className="text-lg font-semibold">{sortedAthletes[currentAthleteIndex + 1].name}</span>
                     <span className="text-xs px-2 py-0.5 bg-secondary text-secondary-foreground">
-                      {athletes[currentAthleteIndex + 1].countryCode}
+                      {sortedAthletes[currentAthleteIndex + 1].countryCode}
                     </span>
                   </div>
                   <div className="text-xl font-bold text-muted-foreground">
-                    {athletes[currentAthleteIndex + 1][currentLift][currentRound - 1]?.weight} kg
+                    {sortedAthletes[currentAthleteIndex + 1][currentLift][currentRound - 1]?.weight} kg
                   </div>
                 </div>
               </div>
