@@ -2,7 +2,15 @@
 
 export type LiftType = "squat" | "bench" | "deadlift"
 export type AttemptStatus = "pending" | "valid" | "invalid" | "current"
-export type WeightCategory = "83kg" | "93kg" | "105kg" | "105+kg"
+export type WeightCategory =
+  | "-59kg"
+  | "-66kg"
+  | "-74kg"
+  | "-83kg"
+  | "-93kg"
+  | "-105kg"
+  | "-120kg"
+  | "+120kg"
 
 export interface Attempt {
   id?: number
@@ -35,10 +43,14 @@ export interface CompetitionState {
 }
 
 export const WEIGHT_CATEGORIES: { id: WeightCategory; label: string; maxWeight: string }[] = [
-  { id: "83kg", label: "Hasta 83 kg", maxWeight: "83" },
-  { id: "93kg", label: "Hasta 93 kg", maxWeight: "93" },
-  { id: "105kg", label: "Hasta 105 kg", maxWeight: "105" },
-  { id: "105+kg", label: "Más de 105 kg", maxWeight: "105+" },
+  { id: "-59kg", label: "-59 kg", maxWeight: "59" },
+  { id: "-66kg", label: "-66 kg", maxWeight: "66" },
+  { id: "-74kg", label: "-74 kg", maxWeight: "74" },
+  { id: "-83kg", label: "-83 kg", maxWeight: "83" },
+  { id: "-93kg", label: "-93 kg", maxWeight: "93" },
+  { id: "-105kg", label: "-105 kg", maxWeight: "105" },
+  { id: "-120kg", label: "-120 kg", maxWeight: "120" },
+  { id: "+120kg", label: "+120 kg", maxWeight: "120+" },
 ]
 
 export const LIFT_NAMES: Record<LiftType, string> = {
@@ -57,7 +69,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "México",
     countryCode: "MX",
     bodyWeight: 82.5,
-    category: "83kg",
+    category: "-83kg",
     squat: [
       { weight: 250, status: "valid" },
       { weight: 265, status: "valid" },
@@ -84,7 +96,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Colombia",
     countryCode: "CO",
     bodyWeight: 81.8,
-    category: "83kg",
+    category: "-83kg",
     squat: [
       { weight: 245, status: "valid" },
       { weight: 260, status: "invalid" },
@@ -111,7 +123,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "España",
     countryCode: "ES",
     bodyWeight: 82.1,
-    category: "83kg",
+    category: "-83kg",
     squat: [
       { weight: 255, status: "valid" },
       { weight: 270, status: "valid" },
@@ -138,7 +150,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Argentina",
     countryCode: "AR",
     bodyWeight: 92.3,
-    category: "93kg",
+    category: "-93kg",
     squat: [
       { weight: 275, status: "valid" },
       { weight: 290, status: "valid" },
@@ -165,7 +177,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Chile",
     countryCode: "CL",
     bodyWeight: 91.7,
-    category: "93kg",
+    category: "-93kg",
     squat: [
       { weight: 270, status: "valid" },
       { weight: 285, status: "invalid" },
@@ -192,7 +204,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Perú",
     countryCode: "PE",
     bodyWeight: 104.2,
-    category: "105kg",
+    category: "-105kg",
     squat: [
       { weight: 300, status: "valid" },
       { weight: 315, status: "valid" },
@@ -219,7 +231,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Venezuela",
     countryCode: "VE",
     bodyWeight: 103.8,
-    category: "105kg",
+    category: "-105kg",
     squat: [
       { weight: 295, status: "valid" },
       { weight: 310, status: "valid" },
@@ -246,7 +258,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Ecuador",
     countryCode: "EC",
     bodyWeight: 118.5,
-    category: "105+kg",
+    category: "-120kg",
     squat: [
       { weight: 340, status: "valid" },
       { weight: 360, status: "valid" },
@@ -273,7 +285,7 @@ export const MOCK_ATHLETES: Athlete[] = [
     country: "Uruguay",
     countryCode: "UY",
     bodyWeight: 122.3,
-    category: "105+kg",
+    category: "+120kg",
     squat: [
       { weight: 335, status: "valid" },
       { weight: 352.5, status: "invalid" },

@@ -96,9 +96,12 @@ function mapStatus(resultado: ResultadoIntento): AttemptStatus {
 }
 
 function mapWeightToCategory(weight: number): WeightCategory {
-    // Simple logic, can be refined
-    if (weight <= 83) return "83kg"
-    if (weight <= 93) return "93kg"
-    if (weight <= 105) return "105kg"
-    return "105+kg"
+    if (weight <= 59) return "-59kg"
+    if (weight <= 66) return "-66kg"
+    if (weight <= 74) return "-74kg"
+    if (weight <= 83) return "-83kg"
+    if (weight <= 93) return "-93kg"
+    if (weight <= 105) return "-105kg"
+    if (weight <= 120) return "-120kg"
+    return "+120kg"
 }
