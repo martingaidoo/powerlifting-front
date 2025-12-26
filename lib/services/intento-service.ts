@@ -28,6 +28,7 @@ export interface CreateIntentoDto {
     tipo: TipoMovimiento;
     numero: number;
     peso: number;
+    resultado?: ResultadoIntento;
 }
 
 export interface UpdateIntentoDto {
