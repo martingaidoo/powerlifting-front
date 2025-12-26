@@ -1,5 +1,7 @@
 import { TipoMovimiento } from "./intento-service"
 
+import { ENDPOINTS } from "../config"
+
 export interface Levantamiento {
     id: string
     participanteId: number
@@ -19,7 +21,7 @@ export interface CreateLevantamientoDto {
     peso3: number
 }
 
-const API_URL = "http://localhost:3001/levantamiento"
+const API_URL = ENDPOINTS.LEVANTAMIENTOS
 
 export const LevantamientoService = {
     create: async (data: CreateLevantamientoDto): Promise<Levantamiento> => {

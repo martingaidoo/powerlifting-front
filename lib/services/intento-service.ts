@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3001/intentos"
+import { ENDPOINTS } from "../config"
+
+const API_URL = ENDPOINTS.INTENTOS
 
 export enum TipoMovimiento {
     SENTADILLA = 'SENTADILLA',

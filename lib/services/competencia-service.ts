@@ -1,17 +1,19 @@
-
 import { z } from "zod"
 
-export type Competencia = {
-    id: number
-    nombre: string
-    fecha: string
-    hora: string
-    fase: number
+import { ENDPOINTS } from "../config"
+
+export interface Competencia {
+    id: number;
+    nombre: string;
+    fecha: string;
+    hora: string;
+    ubicacion: string;
+    fase: string;
 }
 
 export type CreateCompetenciaDto = Omit<Competencia, "id">
 
-const API_URL = "http://localhost:3001/competencia"
+const API_URL = ENDPOINTS.COMPETENCIAS
 
 export const CompetenciaService = {
     getAll: async (): Promise<Competencia[]> => {

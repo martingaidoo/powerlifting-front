@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:3001/participante"
+import { ENDPOINTS } from "../config"
+
+const API_URL = ENDPOINTS.PARTICIPANTES
 
 export interface Participante {
     id: number;
