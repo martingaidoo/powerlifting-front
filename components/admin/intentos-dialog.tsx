@@ -366,26 +366,9 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                     </div>
                 </div>
 
-                {canAdd && (
-                    <div className="flex items-end gap-3 p-4 border rounded-lg bg-muted/20">
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor={`weight-${tipo}`}>Peso Ejecutado</Label>
-                            <Input
-                                type="number"
-                                id={`weight-${tipo}`}
-                                placeholder="0.0"
-                                step="2.5"
-                                value={newWeight}
-                                onChange={(e) => {
-                                    setNewWeight(e.target.value)
-                                }}
-                            />
-                        </div>
-                        <Button onClick={() => handleCreateIntento(tipo)}>
-                            <Plus className="mr-2 h-4 w-4" /> Registrar Ejecución
-                        </Button>
-                    </div>
-                )}
+                {/* Execution Registration Removed */
+                    canAdd && <div className="hidden"></div>
+                }
             </div>
         )
     }

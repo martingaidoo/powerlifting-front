@@ -30,15 +30,21 @@ import {
 import { Plus, Pencil, Trash2, ArrowLeft, Dumbbell } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { ParticipanteService, Participante } from "@/lib/services/participante-service"
 import { CompetenciaService, Competencia } from "@/lib/services/competencia-service"
 import { ParticipanteDialog } from "@/components/admin/participante-dialog"
 import { IntentosDialog } from "@/components/admin/intentos-dialog"
 
-export default function AdminParticipantesPage() {
+import { Suspense } from "react"
+
+function AdminParticipantesContent() {
+    const searchParams = useSearchParams()
+    const initialCompetitionId = searchParams.get("competitionId")
+
     const [participantes, setParticipantes] = useState<Participante[]>([])
     const [competencias, setCompetencias] = useState<Competencia[]>([])
-    const [selectedCompetencia, setSelectedCompetencia] = useState<string>("all")
+    const [selectedCompetencia, setSelectedCompetencia] = useState<string>(initialCompetitionId || "all")
 
     // Dialog states
     const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -228,5 +234,13 @@ export default function AdminParticipantesPage() {
                 </AlertDialogContent>
             </AlertDialog>
         </div>
+    )
+}
+
+export default function AdminParticipantesPage() {
+    return (
+        <Suspense fallback={<div className="container mx-auto py-10">Cargando...</div>}>
+            <AdminParticipantesContent />
+        </Suspense>
     )
 }

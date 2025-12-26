@@ -12,7 +12,8 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { Pencil, Trash2, Plus } from "lucide-react"
+import { Pencil, Trash2, Plus, Users } from "lucide-react"
+import Link from "next/link"
 import { toast } from "sonner"
 import {
     AlertDialog,
@@ -119,6 +120,11 @@ export default function CompetenciasAdminPage() {
                                     <TableCell>{comp.fase}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
+                                            <Link href={`/admin/participantes?competitionId=${comp.id}`}>
+                                                <Button variant="ghost" size="icon" title="Ver Participantes">
+                                                    <Users className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
