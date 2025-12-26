@@ -64,9 +64,13 @@ function mapAttempts(
     // Only advances on Success (or pending assumption)
     let planIndex = 1
 
+    console.log(`[mapAttempts] ${tipo} PLAN:`, plan)
+
+
     // Initialize 3 attempts
     for (let i = 1; i <= 3; i++) {
         const executed = intentos.find(att => att.tipo === tipo && att.numero === i)
+        console.log(`[mapAttempts] i=${i} executed?`, !!executed, executed?.resultado)
 
         if (executed) {
             // @ts-ignore
@@ -81,6 +85,7 @@ function mapAttempts(
             if (executed.resultado === ResultadoIntento.EXITO) {
                 planIndex++
             }
+            console.log(`[mapAttempts] i=${i} Result=${executed.resultado} => planIndex=${planIndex}`)
         } else {
             // Calculate candidate weight based on current plan cursor
             let candidateWeight = 0
@@ -90,6 +95,7 @@ function mapAttempts(
                 else if (planIndex === 3) candidateWeight = Number(plan.peso3)
                 else candidateWeight = Number(plan.peso3)
             }
+            console.log(`[mapAttempts] i=${i} Pending. planIndex=${planIndex} candidate=${candidateWeight}`)
 
             // Apply Rules based on Previous Attempt
             // attempts array is 0-indexed, so attempt 1 is at index 0
@@ -97,6 +103,7 @@ function mapAttempts(
             let finalWeight = candidateWeight
 
             if (prevAttempt) {
+                console.log(`[mapAttempts] i=${i} PrevAttempt status=${prevAttempt.status} weight=${prevAttempt.weight}`)
                 if (prevAttempt.status === 'invalid') {
                     // Rule 1: Failure -> Repeat Weight
                     finalWeight = prevAttempt.weight
@@ -107,6 +114,7 @@ function mapAttempts(
                     }
                 }
             }
+            console.log(`[mapAttempts] i=${i} FinalWeight=${finalWeight}`)
 
             attempts.push({ weight: finalWeight, status: "pending" })
 

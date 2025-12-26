@@ -190,6 +190,23 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
             }
             updatedAthlete[currentLift] = attempts
 
+            // Update next attempt weight based on result
+            if (attemptIndex < attempts.length - 1) {
+              const currentWeight = attempts[attemptIndex].weight
+              const nextAttempt = { ...attempts[attemptIndex + 1] }
+
+              if (!isValid) {
+                // FAIL: Repeat weight
+                nextAttempt.weight = currentWeight
+              } else {
+                // SUCCESS: Enforce +2.5kg minimum
+                if (nextAttempt.weight < currentWeight + 2.5) {
+                  nextAttempt.weight = currentWeight + 2.5
+                }
+              }
+              attempts[attemptIndex + 1] = nextAttempt
+            }
+
             // Update best lift if valid
             if (isValid) {
               const weight = attempts[attemptIndex].weight
