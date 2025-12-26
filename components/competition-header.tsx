@@ -2,14 +2,17 @@
 
 import { type LiftType, type WeightCategory, LIFT_NAMES, WEIGHT_CATEGORIES, EVENT_INFO } from "@/lib/competition-data"
 import { BarbellIcon } from "./barbell-icon"
+import { Button } from "@/components/ui/button"
+import { Trophy } from "lucide-react"
 
 interface CompetitionHeaderProps {
   category?: WeightCategory
   currentLift: LiftType
   currentRound: number
+  onShowRankings: () => void
 }
 
-export function CompetitionHeader({ category, currentLift, currentRound }: CompetitionHeaderProps) {
+export function CompetitionHeader({ category, currentLift, currentRound, onShowRankings }: CompetitionHeaderProps) {
   const categoryInfo = category ? WEIGHT_CATEGORIES.find((c) => c.id === category) : null
 
   return (
@@ -41,18 +44,16 @@ export function CompetitionHeader({ category, currentLift, currentRound }: Compe
             <div className="text-xs text-muted-foreground mt-1">Ronda {currentRound}/3</div>
           </div>
 
-          {/* Category badge */}
+          {/* Rankings Button */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground uppercase">Competencia</div>
-                <div className="text-lg font-bold">{categoryInfo ? `${categoryInfo.maxWeight} KG` : "OPEN"}</div>
-              </div>
-              <div className="w-px h-8 bg-border hidden md:block" />
-              <div className="hidden md:block text-right">
-                <div className="text-xs text-muted-foreground">{categoryInfo ? "Masculina" : "General"}</div>
-              </div>
-            </div>
+            <Button
+              variant="outline"
+              className="hidden md:flex gap-2"
+              onClick={onShowRankings}
+            >
+              <Trophy className="h-4 w-4" />
+              Clasificación
+            </Button>
 
             {/* Gym Logo */}
             <div className="hidden md:block w-px h-8 bg-border" />

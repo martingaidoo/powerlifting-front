@@ -128,6 +128,7 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
   const [completedRound, setCompletedRound] = useState(0)
   const [showDisciplineWinner, setShowDisciplineWinner] = useState(false)
   const [completedDiscipline, setCompletedDiscipline] = useState<LiftType | null>(null)
+  const [showManualRankings, setShowManualRankings] = useState(false)
 
   const handleRestart = useCallback(() => {
     // Reset local state
@@ -313,7 +314,12 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
 
   return (
     <div className="min-h-screen flex flex-col">
-      <CompetitionHeader category={category} currentLift={currentLift} currentRound={currentRound} />
+      <CompetitionHeader
+        category={category}
+        currentLift={currentLift}
+        currentRound={currentRound}
+        onShowRankings={() => setShowManualRankings(true)}
+      />
 
       {showRoundRankings && (
         <RoundRankingsOverlay
@@ -321,6 +327,17 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
           currentLift={currentLift}
           completedRound={completedRound}
           onComplete={handleRoundRankingsComplete}
+        />
+      )}
+
+      {showManualRankings && (
+        <RoundRankingsOverlay
+          athletes={athletes}
+          currentLift={currentLift}
+          completedRound={currentRound}
+          onComplete={() => { }}
+          isManualTrigger={true}
+          onClose={() => setShowManualRankings(false)}
         />
       )}
 

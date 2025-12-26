@@ -1,17 +1,26 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import { type Athlete, type LiftType, getRankings, LIFT_NAMES } from "@/lib/competition-data"
 import { AnimatedCounter } from "./animated-counter"
+import { X } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface RoundRankingsOverlayProps {
   athletes: Athlete[]
   currentLift: LiftType
   completedRound: number
   onComplete: () => void
+  isManualTrigger?: boolean
+  onClose?: () => void
 }
 
-export function RoundRankingsOverlay({ athletes, currentLift, completedRound, onComplete }: RoundRankingsOverlayProps) {
+export function RoundRankingsOverlay({
+  athletes,
+  currentLift,
+  completedRound,
+  onComplete,
+  isManualTrigger = false,
+  onClose
+}: RoundRankingsOverlayProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [showRows, setShowRows] = useState(false)
 
@@ -22,23 +31,44 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
     const enterTimer = setTimeout(() => setIsVisible(true), 100)
     const rowsTimer = setTimeout(() => setShowRows(true), 600)
 
-    const exitTimer = setTimeout(() => {
-      setIsVisible(false)
-      setShowRows(false)
-      setTimeout(onComplete, 500)
-    }, 8000)
+    let exitTimer: NodeJS.Timeout
+
+    if (!isManualTrigger) {
+      exitTimer = setTimeout(() => {
+        setIsVisible(false)
+        setShowRows(false)
+        setTimeout(onComplete, 500)
+      }, 8000)
+    }
 
     return () => {
       clearTimeout(enterTimer)
       clearTimeout(rowsTimer)
-      clearTimeout(exitTimer)
+      if (exitTimer) clearTimeout(exitTimer)
     }
-  }, [onComplete])
+  }, [onComplete, isManualTrigger])
+
+  const handleManualClose = () => {
+    setIsVisible(false)
+    setShowRows(false)
+    setTimeout(() => {
+      if (onClose) onClose()
+    }, 500)
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
       {/* Background pulse effect */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-primary/5 animate-pulse" />
+
+      {/* Close button for manual mode */}
+      {isManualTrigger && (
+        <div className="absolute top-4 right-4 z-50">
+          <Button variant="ghost" size="icon" onClick={handleManualClose}>
+            <X className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
 
       <div
         className={`relative max-w-4xl w-full mx-4 transition-all duration-700 ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"
@@ -46,9 +76,11 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block px-4 py-1 bg-primary/20 border border-primary/50 mb-4">
-            <span className="text-xs tracking-[0.4em] text-primary uppercase">Ronda {completedRound} Completada</span>
-          </div>
+          {!isManualTrigger && (
+            <div className="inline-block px-4 py-1 bg-primary/20 border border-primary/50 mb-4">
+              <span className="text-xs tracking-[0.4em] text-primary uppercase">Ronda {completedRound} Completada</span>
+            </div>
+          )}
           <h2 className="text-4xl md:text-6xl font-bold tracking-tight mb-2">CLASIFICACIÓN</h2>
           <p className="text-xl text-muted-foreground">{LIFT_NAMES[currentLift]}</p>
         </div>
@@ -142,9 +174,11 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
         </div>
 
         {/* Continue hint */}
-        <div className="text-center mt-6 text-sm text-muted-foreground animate-pulse">
-          Siguiente ronda en unos segundos...
-        </div>
+        {!isManualTrigger && (
+          <div className="text-center mt-6 text-sm text-muted-foreground animate-pulse">
+            Siguiente ronda en unos segundos...
+          </div>
+        )}
       </div>
     </div>
   )
