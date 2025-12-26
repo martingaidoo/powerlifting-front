@@ -37,7 +37,7 @@ import { toast } from "sonner"
 import { Participante, ParticipanteService } from "@/lib/services/participante-service"
 import { IntentoService, Intento, TipoMovimiento, ResultadoIntento } from "@/lib/services/intento-service"
 import { Levantamiento, LevantamientoService } from "@/lib/services/levantamiento-service"
-import { Plus, Save } from "lucide-react"
+import { Plus, Save, Loader2 } from "lucide-react"
 
 interface IntentosDialogProps {
     participante: Participante
@@ -129,11 +129,14 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
     }, [activeTab, intentos, planningWeights, loading])
 
 
+    const [saving, setSaving] = useState(false)
+    const [savingType, setSavingType] = useState<TipoMovimiento | null>(null)
+
+    // ... (inside the component)
+
     const handleSaveLevantamiento = async (tipo: TipoMovimiento) => {
         setError(null)
-        console.log("handleSaveLevantamiento", tipo)
         const weights = planningWeights[tipo]
-        console.log("Weights:", weights)
 
         if (!weights || !weights.w1 || !weights.w2 || !weights.w3) {
             const msg = "Complete los 3 pesos"
@@ -153,16 +156,16 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
             return
         }
 
-        // Basic client-side validation
         if (w1 % 2.5 !== 0 || w2 % 2.5 !== 0 || w3 % 2.5 !== 0) {
-            const msg = "Los pesos deben ser múltiplos de 2.5 (ej: 20, 22.5, 25)"
+            const msg = "Los pesos deben ser múltiplos de 2.5"
             toast.error(msg)
             setError(msg)
             return
         }
 
         try {
-            console.log("Sending create request...")
+            setSaving(true)
+            setSavingType(tipo)
             await LevantamientoService.create({
                 participanteId: participante.id,
                 tipo,
@@ -170,7 +173,6 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                 peso2: w2,
                 peso3: w3
             })
-            console.log("Success")
             toast.success("Planificación guardada")
             setError(null)
             fetchData()
@@ -179,6 +181,9 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
             const msg = error.message || "Error al guardar planificación"
             toast.error(msg)
             setError(msg)
+        } finally {
+            setSaving(false)
+            setSavingType(null)
         }
     }
 
@@ -271,11 +276,7 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
 
         return (
             <div className="space-y-6 pt-4">
-                <div className="flex justify-end">
-                    <Button variant="ghost" size="sm" className="text-destructive h-auto p-0 hover:bg-transparent" onClick={() => handleParticipationToggle(tipo, true)}>
-                        Desactivar {tipo}
-                    </Button>
-                </div>
+                {/* Deactivate button removed */}
 
                 {/* Planning Section */}
                 <div className="p-4 border rounded-lg bg-card text-card-foreground shadow-sm">
@@ -310,8 +311,18 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                                 onChange={(e) => setPlanningWeights({ ...planningWeights, [tipo]: { ...currentPlan, w3: e.target.value } })}
                             />
                         </div>
-                        <Button onClick={() => handleSaveLevantamiento(tipo)} variant="secondary">
-                            Guardar
+                        <Button
+                            onClick={() => handleSaveLevantamiento(tipo)}
+                            disabled={saving && savingType === tipo}
+                        >
+                            {saving && savingType === tipo ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Guardando...
+                                </>
+                            ) : (
+                                "Guardar"
+                            )}
                         </Button>
                     </div>
                 </div>
