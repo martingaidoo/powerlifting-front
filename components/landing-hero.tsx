@@ -3,12 +3,16 @@
 import { useEffect, useState, useRef } from "react"
 import { BarbellIcon } from "./barbell-icon"
 import { EVENT_INFO } from "@/lib/competition-data"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface LandingHeroProps {
   onStart: () => void
+  competitions: { id: number; nombre: string }[]
+  selectedId: number | null
+  onSelect: (id: string) => void
 }
 
-export function LandingHero({ onStart }: LandingHeroProps) {
+export function LandingHero({ onStart, competitions, selectedId, onSelect }: LandingHeroProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [showBarbell, setShowBarbell] = useState(false)
   const [showContent, setShowContent] = useState(false)
@@ -146,6 +150,29 @@ export function LandingHero({ onStart }: LandingHeroProps) {
           </div>
         </div>
 
+        {/* Competition Selector */}
+        <div
+          className={`mt-10 w-full max-w-xs transition-all duration-700 delay-600 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+        >
+          <Select onValueChange={onSelect} value={selectedId ? String(selectedId) : undefined}>
+            <SelectTrigger className="w-full bg-background/50 border-primary/20 hover:border-primary/50 text-foreground transition-colors">
+              <SelectValue placeholder="Seleccionar Competencia" />
+            </SelectTrigger>
+            <SelectContent>
+              {competitions.length > 0 ? (
+                competitions.map((comp) => (
+                  <SelectItem key={comp.id} value={String(comp.id)}>
+                    {comp.nombre}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="p-2 text-sm text-muted-foreground text-center">Cargando...</div>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Categories preview */}
         <div
           className={`mt-12 flex flex-wrap justify-center gap-3 transition-all duration-700 delay-600 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
@@ -165,8 +192,9 @@ export function LandingHero({ onStart }: LandingHeroProps) {
         {/* CTA Button */}
         <button
           onClick={onStart}
+          disabled={!selectedId}
           className={`group relative mt-16 px-12 py-5 text-lg font-semibold tracking-widest uppercase overflow-hidden transition-all duration-700 delay-700 ${showContent ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+            } disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {/* Button background */}
           <div className="absolute inset-0 bg-primary transition-transform duration-300 group-hover:scale-105" />

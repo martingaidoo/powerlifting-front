@@ -20,6 +20,7 @@ import { toast } from "sonner"
 
 interface CompetitionViewProps {
   category?: WeightCategory
+  competitionId: number
   onRestart: () => void
 }
 
@@ -43,7 +44,7 @@ const sortAthletesForLift = (list: Athlete[], lift: LiftType, round: number) => 
     })
 }
 
-export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
+export function CompetitionView({ category, competitionId, onRestart }: CompetitionViewProps) {
   const [athletes, setAthletes] = useState<Athlete[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -87,8 +88,7 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
   const loadData = useCallback(async () => {
     try {
       setLoading(true)
-      // Hardcoded competition ID 1 for now, or pass as prop
-      const data = await fetchCompetitionData(1)
+      const data = await fetchCompetitionData(competitionId)
 
       // Filter if category is provided
       const filtered = category ? data.filter(a => a.category === category) : data
@@ -96,15 +96,17 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
       setAthletes(filtered)
 
       // Initialize state logic
-      const hasLocalState = typeof window !== "undefined" && window.localStorage.getItem("powerlifting_app_v1_currentLift")
+      const storageKey = (key: string) => `powerlifting_app_v1_${competitionId}_${key}`
+
+      const hasLocalState = typeof window !== "undefined" && window.localStorage.getItem(storageKey("currentLift"))
       let shouldUseSmartState = !hasLocalState
 
       // Validation: Check if local state is stale (points to an already finished attempt)
       if (hasLocalState) {
         try {
-          const localLift = JSON.parse(window.localStorage.getItem("powerlifting_app_v1_currentLift") || '"squat"') as LiftType
-          const localRound = JSON.parse(window.localStorage.getItem("powerlifting_app_v1_currentRound") || '1') as number
-          const localIndex = JSON.parse(window.localStorage.getItem("powerlifting_app_v1_currentAthleteIndex") || '0') as number
+          const localLift = JSON.parse(window.localStorage.getItem(storageKey("currentLift")) || '"squat"') as LiftType
+          const localRound = JSON.parse(window.localStorage.getItem(storageKey("currentRound")) || '1') as number
+          const localIndex = JSON.parse(window.localStorage.getItem(storageKey("currentAthleteIndex")) || '0') as number
 
           const sortedIfNeeded = sortAthletesForLift(filtered, localLift, localRound)
           const targetAthlete = sortedIfNeeded[localIndex]
@@ -113,6 +115,11 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
           if (targetAthlete && targetAthlete[localLift][localRound - 1]?.status !== "pending") {
             console.log("Local state is stale (attempt already done), switching to smart state")
             shouldUseSmartState = true
+          } else {
+            // Load state from local storage
+            setCurrentLift(localLift)
+            setCurrentRound(localRound)
+            setCurrentAthleteIndex(localIndex)
           }
         } catch (e) {
           console.error("Error validating local state", e)
@@ -135,14 +142,14 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
     } finally {
       setLoading(false)
     }
-  }, [category, calculateSmartState])
+  }, [category, competitionId, calculateSmartState])
 
   useEffect(() => {
     loadData()
   }, [loadData])
 
   // Persistence Keys
-  const STORAGE_KEY_PREFIX = "powerlifting_app_v1_"
+  const STORAGE_KEY_PREFIX = `powerlifting_app_v1_${competitionId}_`
 
   // Helper to get initial state from storage
   const getInitialState = <T,>(key: string, savedValue: T): T => {
@@ -170,27 +177,11 @@ export function CompetitionView({ category, onRestart }: CompetitionViewProps) {
   useEffect(() => {
     if (typeof window === "undefined") return
     localStorage.setItem(STORAGE_KEY_PREFIX + "currentLift", JSON.stringify(currentLift))
-  }, [currentLift])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
     localStorage.setItem(STORAGE_KEY_PREFIX + "currentRound", JSON.stringify(currentRound))
-  }, [currentRound])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
     localStorage.setItem(STORAGE_KEY_PREFIX + "currentAthleteIndex", JSON.stringify(currentAthleteIndex))
-  }, [currentAthleteIndex])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
     localStorage.setItem(STORAGE_KEY_PREFIX + "showLiftTransition", JSON.stringify(showLiftTransition))
-  }, [showLiftTransition])
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
     localStorage.setItem(STORAGE_KEY_PREFIX + "isFinished", JSON.stringify(isFinished))
-  }, [isFinished])
+  }, [currentLift, currentRound, currentAthleteIndex, showLiftTransition, isFinished, STORAGE_KEY_PREFIX])
 
   // Clear storage on restart
   const handleRestart = useCallback(() => {

@@ -39,7 +39,7 @@ export const LevantamientoService = {
         const params = new URLSearchParams();
         if (competenciaId) params.append('competenciaId', competenciaId.toString());
 
-        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to fetch levantamientos");
         return res.json();
     },
