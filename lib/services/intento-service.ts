@@ -29,6 +29,7 @@ export interface CreateIntentoDto {
     numero: number;
     peso: number;
     resultado?: ResultadoIntento;
+
 }
 
 export interface UpdateIntentoDto {

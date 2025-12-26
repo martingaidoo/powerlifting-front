@@ -95,46 +95,15 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
 
       setAthletes(filtered)
 
-      // Initialize state logic
-      const storageKey = (key: string) => `powerlifting_app_v1_${competitionId}_${key}`
+      // ALWAYS calculate smart state from fresh data
+      // This ensures we resume exactly where we left off based on the backend data
+      const smartState = calculateSmartState(filtered)
 
-      const hasLocalState = typeof window !== "undefined" && window.localStorage.getItem(storageKey("currentLift"))
-      let shouldUseSmartState = !hasLocalState
-
-      // Validation: Check if local state is stale (points to an already finished attempt)
-      if (hasLocalState) {
-        try {
-          const localLift = JSON.parse(window.localStorage.getItem(storageKey("currentLift")) || '"squat"') as LiftType
-          const localRound = JSON.parse(window.localStorage.getItem(storageKey("currentRound")) || '1') as number
-          const localIndex = JSON.parse(window.localStorage.getItem(storageKey("currentAthleteIndex")) || '0') as number
-
-          const sortedIfNeeded = sortAthletesForLift(filtered, localLift, localRound)
-          const targetAthlete = sortedIfNeeded[localIndex]
-
-          // If the athlete at this index has already completed this attempt, our local state is behind
-          if (targetAthlete && targetAthlete[localLift][localRound - 1]?.status !== "pending") {
-            console.log("Local state is stale (attempt already done), switching to smart state")
-            shouldUseSmartState = true
-          } else {
-            // Load state from local storage
-            setCurrentLift(localLift)
-            setCurrentRound(localRound)
-            setCurrentAthleteIndex(localIndex)
-          }
-        } catch (e) {
-          console.error("Error validating local state", e)
-          shouldUseSmartState = true
-        }
-      }
-
-      if (shouldUseSmartState) {
-        const smartState = calculateSmartState(filtered)
-        setCurrentLift(smartState.lift)
-        setCurrentRound(smartState.round)
-        setCurrentAthleteIndex(smartState.athleteIndex)
-        setIsFinished(smartState.isFinished)
-        setShowLiftTransition(true)
-      }
+      setCurrentLift(smartState.lift)
+      setCurrentRound(smartState.round)
+      setCurrentAthleteIndex(smartState.athleteIndex)
+      setIsFinished(smartState.isFinished)
+      setShowLiftTransition(true)
 
     } catch (error) {
       console.error(error)
@@ -148,50 +117,19 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
     loadData()
   }, [loadData])
 
-  // Persistence Keys
-  const STORAGE_KEY_PREFIX = `powerlifting_app_v1_${competitionId}_`
-
-  // Helper to get initial state from storage
-  const getInitialState = <T,>(key: string, savedValue: T): T => {
-    if (typeof window === "undefined") return savedValue
-    try {
-      const item = window.localStorage.getItem(STORAGE_KEY_PREFIX + key)
-      return item ? JSON.parse(item) : savedValue
-    } catch (error) {
-      console.error(error)
-      return savedValue
-    }
-  }
-
-  const [currentLift, setCurrentLift] = useState<LiftType>(() => getInitialState("currentLift", "squat"))
-  const [currentRound, setCurrentRound] = useState(() => getInitialState("currentRound", 1))
-  const [currentAthleteIndex, setCurrentAthleteIndex] = useState(() => getInitialState("currentAthleteIndex", 0))
-  const [showLiftTransition, setShowLiftTransition] = useState(() => getInitialState("showLiftTransition", true))
-  const [isFinished, setIsFinished] = useState(() => getInitialState("isFinished", false))
+  // State variables initialized with defaults
+  // We let loadData set the correct state from backend data
+  const [currentLift, setCurrentLift] = useState<LiftType>("squat")
+  const [currentRound, setCurrentRound] = useState(1)
+  const [currentAthleteIndex, setCurrentAthleteIndex] = useState(0)
+  const [showLiftTransition, setShowLiftTransition] = useState(true)
+  const [isFinished, setIsFinished] = useState(false)
   const [showRoundRankings, setShowRoundRankings] = useState(false)
   const [completedRound, setCompletedRound] = useState(0)
   const [showDisciplineWinner, setShowDisciplineWinner] = useState(false)
   const [completedDiscipline, setCompletedDiscipline] = useState<LiftType | null>(null)
 
-  // Persist state changes
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    localStorage.setItem(STORAGE_KEY_PREFIX + "currentLift", JSON.stringify(currentLift))
-    localStorage.setItem(STORAGE_KEY_PREFIX + "currentRound", JSON.stringify(currentRound))
-    localStorage.setItem(STORAGE_KEY_PREFIX + "currentAthleteIndex", JSON.stringify(currentAthleteIndex))
-    localStorage.setItem(STORAGE_KEY_PREFIX + "showLiftTransition", JSON.stringify(showLiftTransition))
-    localStorage.setItem(STORAGE_KEY_PREFIX + "isFinished", JSON.stringify(isFinished))
-  }, [currentLift, currentRound, currentAthleteIndex, showLiftTransition, isFinished, STORAGE_KEY_PREFIX])
-
-  // Clear storage on restart
   const handleRestart = useCallback(() => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEY_PREFIX + "currentLift")
-      localStorage.removeItem(STORAGE_KEY_PREFIX + "currentRound")
-      localStorage.removeItem(STORAGE_KEY_PREFIX + "currentAthleteIndex")
-      localStorage.removeItem(STORAGE_KEY_PREFIX + "showLiftTransition")
-      localStorage.removeItem(STORAGE_KEY_PREFIX + "isFinished")
-    }
     // Reset local state
     setCurrentLift("squat")
     setCurrentRound(1)
@@ -278,7 +216,8 @@ export function CompetitionView({ category, competitionId, onRestart }: Competit
             participanteId: parseInt(currentAthlete.id),
             tipo: mapTipo[currentLift],
             numero: currentRound,
-            peso: attempt.weight
+            peso: attempt.weight,
+            resultado: result
           })
           // Update local state with the new ID just in case
           setAthletes((prev) => prev.map(a => {
