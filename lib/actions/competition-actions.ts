@@ -60,26 +60,41 @@ function mapAttempts(
     // Get planned weights
     const plan = levantamientos.find(l => l.tipo === tipo)
 
+    // Cursor for mapping to the plan (1, 2, 3)
+    // Only advances on Success (or pending assumption)
+    let planIndex = 1
+
     // Initialize 3 attempts
     for (let i = 1; i <= 3; i++) {
         const executed = intentos.find(att => att.tipo === tipo && att.numero === i)
 
-        let weight = 0
-        let status: AttemptStatus = "pending"
-
         if (executed) {
             // @ts-ignore
             attempts.push({ id: executed.id, weight: Number(executed.peso), status: mapStatus(executed.resultado) })
-        } else if (plan) {
-            // If not executed, show planned weight if available
-            weight = 0
-            if (i === 1) weight = Number(plan.peso1)
-            if (i === 2) weight = Number(plan.peso2)
-            if (i === 3) weight = Number(plan.peso3)
+
+            // Should we advance the plan?
+            // If Success: Yes.
+            // If Fail: No (Repeat same weight next time).
+            // If Pending: (Usually shouldn't happen in 'executed' list unless active) -> Assume no advance until resolved?
+            // Actually 'executed' implies a result exists usually.
+            // If the user marked it as 'Pending' explicitly? (Gray). That counts as 'not done', so probably stick to same weight?
+            if (executed.resultado === ResultadoIntento.EXITO) {
+                planIndex++
+            }
+        } else {
+            // Show current planned weight
+            let weight = 0
+            if (plan) {
+                if (planIndex === 1) weight = Number(plan.peso1)
+                else if (planIndex === 2) weight = Number(plan.peso2)
+                else if (planIndex === 3) weight = Number(plan.peso3)
+                else weight = Number(plan.peso3) // Cap at max
+            }
 
             attempts.push({ weight, status: "pending" })
-        } else {
-            attempts.push({ weight: 0, status: "pending" })
+
+            // For visualization of *future* pending boxes, assume success on this one
+            planIndex++
         }
     }
 
