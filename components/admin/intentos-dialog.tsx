@@ -327,7 +327,6 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                     </div>
                 </div>
 
-                {/* Execution Section */}
                 <div>
                     <h3 className="font-semibold mb-3">Ejecución</h3>
                     <div className="rounded-md border">
@@ -344,7 +343,40 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                                 {attempts.map((intento) => (
                                     <TableRow key={intento.id}>
                                         <TableCell className="font-medium">{intento.numero}</TableCell>
-                                        <TableCell>{intento.peso}</TableCell>
+                                        <TableCell>
+                                            <Input
+                                                className="w-24 h-8"
+                                                defaultValue={intento.peso}
+                                                type="number"
+                                                step="2.5"
+                                                onBlur={(e) => {
+                                                    const val = parseFloat(e.target.value)
+                                                    if (isNaN(val) || val <= 0 || val % 2.5 !== 0) {
+                                                        toast.error("Peso inválido (debe ser múltiplo de 2.5)")
+                                                        e.target.value = intento.peso.toString()
+                                                        return
+                                                    }
+                                                    if (val !== intento.peso) {
+                                                        // Call update
+                                                        IntentoService.update(intento.id, { peso: val })
+                                                            .then(() => {
+                                                                toast.success("Peso actualizado")
+                                                                fetchData()
+                                                            })
+                                                            .catch(err => {
+                                                                console.error(err)
+                                                                toast.error("Error al actualizar peso")
+                                                                e.target.value = intento.peso.toString()
+                                                            })
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.currentTarget.blur()
+                                                    }
+                                                }}
+                                            />
+                                        </TableCell>
                                         <TableCell>
                                             <Select
                                                 value={intento.resultado}
@@ -361,7 +393,7 @@ export function IntentosDialog({ participante, trigger }: IntentosDialogProps) {
                                             </Select>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            {/* Future: Edit weight if pending */}
+                                            {/* Future: Actions */}
                                         </TableCell>
                                     </TableRow>
                                 ))}

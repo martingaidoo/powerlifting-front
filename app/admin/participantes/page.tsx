@@ -27,7 +27,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Plus, Pencil, Trash2, ArrowLeft, Dumbbell } from "lucide-react"
+import { Plus, Pencil, Trash2, ArrowLeft, Dumbbell, List } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -110,6 +110,12 @@ function AdminParticipantesContent() {
                         <Button variant="outline" size="sm" className="gap-2">
                             <ArrowLeft className="h-4 w-4" />
                             Volver a Competencias
+                        </Button>
+                    </Link>
+                    <Link href={`/admin/intentos?competitionId=${selectedCompetencia !== "all" ? selectedCompetencia : ""}`}>
+                        <Button variant="outline" className="gap-2">
+                            <List className="h-4 w-4" />
+                            Ver Lista de Intentos
                         </Button>
                     </Link>
                     <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
