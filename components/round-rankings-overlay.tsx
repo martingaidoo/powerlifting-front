@@ -41,9 +41,8 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
       <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-transparent to-primary/5 animate-pulse" />
 
       <div
-        className={`relative max-w-4xl w-full mx-4 transition-all duration-700 ${
-          isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"
-        }`}
+        className={`relative max-w-4xl w-full mx-4 transition-all duration-700 ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"
+          }`}
       >
         {/* Header */}
         <div className="text-center mb-8">
@@ -59,9 +58,10 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
           {/* Table header */}
           <div className="grid grid-cols-12 gap-2 p-4 bg-primary/10 text-xs font-bold tracking-wider uppercase text-muted-foreground border-b border-primary/30">
             <div className="col-span-1 text-center">#</div>
-            <div className="col-span-5">Atleta</div>
+            <div className="col-span-3">Atleta</div>
             <div className="col-span-2 text-center">SQ</div>
             <div className="col-span-2 text-center">BP</div>
+            <div className="col-span-2 text-center">DL</div>
             <div className="col-span-2 text-center">TOTAL</div>
           </div>
 
@@ -73,33 +73,31 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
             return (
               <div
                 key={athlete.id}
-                className={`grid grid-cols-12 gap-2 p-4 items-center border-b border-border/20 transition-all duration-500 ${
-                  showRows ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
-                } ${rank === 1 ? "bg-accent/10" : rank === 2 ? "bg-muted/30" : rank === 3 ? "bg-primary/5" : ""}`}
+                className={`grid grid-cols-12 gap-2 p-4 items-center border-b border-border/20 transition-all duration-500 ${showRows ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-8"
+                  } ${rank === 1 ? "bg-accent/10" : rank === 2 ? "bg-muted/30" : rank === 3 ? "bg-primary/5" : ""}`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 {/* Rank */}
                 <div className="col-span-1 flex justify-center">
                   <div
-                    className={`w-10 h-10 flex items-center justify-center text-lg font-bold ${
-                      rank === 1
-                        ? "bg-accent text-accent-foreground"
-                        : rank === 2
-                          ? "bg-muted-foreground text-background"
-                          : rank === 3
-                            ? "bg-primary/50 text-primary-foreground"
-                            : "bg-secondary text-secondary-foreground"
-                    }`}
+                    className={`w-10 h-10 flex items-center justify-center text-lg font-bold ${rank === 1
+                      ? "bg-accent text-accent-foreground"
+                      : rank === 2
+                        ? "bg-muted-foreground text-background"
+                        : rank === 3
+                          ? "bg-primary/50 text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
                   >
                     {rank}
                   </div>
                 </div>
 
                 {/* Athlete name */}
-                <div className="col-span-5">
+                <div className="col-span-3">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-lg">{athlete.name}</span>
-                    <span className="text-xs px-2 py-0.5 bg-secondary text-secondary-foreground">
+                    <span className="font-bold text-lg truncate">{athlete.name}</span>
+                    <span className="text-xs px-2 py-0.5 bg-secondary text-secondary-foreground shrink-0">
                       {athlete.countryCode}
                     </span>
                   </div>
@@ -120,6 +118,15 @@ export function RoundRankingsOverlay({ athletes, currentLift, completedRound, on
                     className={`text-lg font-semibold ${athlete.bestBench > 0 ? "text-foreground" : "text-muted-foreground/50"}`}
                   >
                     {athlete.bestBench || "—"}
+                  </span>
+                </div>
+
+                {/* Deadlift */}
+                <div className="col-span-2 text-center">
+                  <span
+                    className={`text-lg font-semibold ${athlete.bestDeadlift > 0 ? "text-foreground" : "text-muted-foreground/50"}`}
+                  >
+                    {athlete.bestDeadlift || "—"}
                   </span>
                 </div>
 
