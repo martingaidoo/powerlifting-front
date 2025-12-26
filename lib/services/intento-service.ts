@@ -81,4 +81,14 @@ export const IntentoService = {
         }
         return res.json();
     },
+
+    delete: async (id: number): Promise<void> => {
+        const res = await fetch(`${API_URL}/${id}`, {
+            method: "DELETE",
+        });
+        if (!res.ok) {
+            const error = await res.json();
+            throw new Error(error.message || "Failed to delete intento");
+        }
+    },
 };

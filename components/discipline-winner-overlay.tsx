@@ -60,9 +60,8 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
       {/* Animated rays */}
       <div
-        className={`absolute inset-0 transition-opacity duration-1000 ${
-          phase === "entering" ? "opacity-0" : "opacity-100"
-        }`}
+        className={`absolute inset-0 transition-opacity duration-1000 ${phase === "entering" ? "opacity-0" : "opacity-100"
+          }`}
       >
         {[...Array(8)].map((_, i) => (
           <div
@@ -79,18 +78,16 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
       {/* Glowing orb behind winner */}
       <div
-        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-accent/30 blur-3xl transition-all duration-1000 ${
-          phase === "entering" ? "scale-0 opacity-0" : "scale-100 opacity-50"
-        }`}
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-accent/30 blur-3xl transition-all duration-1000 ${phase === "entering" ? "scale-0 opacity-0" : "scale-100 opacity-50"
+          }`}
       />
 
       {/* Content */}
       <div className="relative text-center z-10 max-w-4xl mx-4">
         {/* Discipline badge */}
         <div
-          className={`inline-block transition-all duration-700 ${
-            phase === "entering" ? "opacity-0 -translate-y-8" : "opacity-100 translate-y-0"
-          }`}
+          className={`inline-block transition-all duration-700 ${phase === "entering" ? "opacity-0 -translate-y-8" : "opacity-100 translate-y-0"
+            }`}
         >
           <div className="px-6 py-2 bg-primary/20 border-2 border-primary mb-6">
             <span className="text-sm tracking-[0.5em] text-primary uppercase font-bold">
@@ -101,20 +98,18 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
         {/* Winner reveal */}
         <div
-          className={`transition-all duration-1000 ${
-            phase === "entering"
+          className={`transition-all duration-1000 ${phase === "entering"
               ? "opacity-0 scale-50"
               : phase === "reveal"
                 ? "opacity-100 scale-100"
                 : "opacity-100 scale-100"
-          }`}
+            }`}
         >
           {/* Trophy/Barbell icon */}
           <div className="flex justify-center mb-6">
             <div
-              className={`transition-all duration-700 delay-500 ${
-                phase === "entering" ? "opacity-0 scale-0" : "opacity-100 scale-100"
-              }`}
+              className={`transition-all duration-700 delay-500 ${phase === "entering" ? "opacity-0 scale-0" : "opacity-100 scale-100"
+                }`}
             >
               <BarbellIcon className="w-32 h-32 text-accent" animate={phase === "reveal"} />
             </div>
@@ -122,18 +117,16 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
           {/* Winner name */}
           <h1
-            className={`text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-4 transition-all duration-700 ${
-              phase === "entering" ? "opacity-0" : "opacity-100"
-            }`}
+            className={`text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-4 transition-all duration-700 ${phase === "entering" ? "opacity-0" : "opacity-100"
+              }`}
           >
             {winner.name.toUpperCase()}
           </h1>
 
           {/* Country */}
           <div
-            className={`flex items-center justify-center gap-3 mb-8 transition-all duration-700 delay-300 ${
-              phase === "entering" || phase === "reveal" ? "opacity-0" : "opacity-100"
-            }`}
+            className={`flex items-center justify-center gap-3 mb-8 transition-all duration-700 delay-300 ${phase === "entering" || phase === "reveal" ? "opacity-0" : "opacity-100"
+              }`}
           >
             <span className="px-4 py-2 bg-secondary text-secondary-foreground text-lg font-semibold">
               {winner.country}
@@ -142,9 +135,8 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
           {/* Winning lift weight */}
           <div
-            className={`transition-all duration-700 delay-500 ${
-              phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+            className={`transition-all duration-700 delay-500 ${phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+              }`}
           >
             <div className="text-sm tracking-[0.3em] text-muted-foreground uppercase mb-2">Mejor Levantamiento</div>
             <div className="text-8xl md:text-9xl font-bold text-accent">
@@ -156,9 +148,8 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
 
         {/* Podium - Top 3 */}
         <div
-          className={`flex justify-center items-end gap-4 mt-12 transition-all duration-700 ${
-            phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-16"
-          }`}
+          className={`flex justify-center items-end gap-4 mt-12 transition-all duration-700 ${phase === "details" ? "opacity-100 translate-y-0" : "opacity-0 translate-y-16"
+            }`}
         >
           {/* 2nd place */}
           {topThree[1] && (
@@ -209,9 +200,8 @@ export function DisciplineWinnerOverlay({ athletes, discipline, onComplete }: Di
         </div>
 
         <div
-          className={`mt-10 text-sm text-muted-foreground transition-opacity duration-500 ${
-            showContinue ? "opacity-100 animate-pulse" : "opacity-0"
-          }`}
+          className={`mt-10 text-sm text-muted-foreground transition-opacity duration-500 ${showContinue ? "opacity-100 animate-pulse" : "opacity-0"
+            }`}
         >
           Click en cualquier lugar para continuar...
         </div>

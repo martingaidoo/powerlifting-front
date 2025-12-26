@@ -19,11 +19,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft, RefreshCw } from "lucide-react"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { ArrowLeft, RefreshCw, Plus, Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { IntentoService, Intento, ResultadoIntento, TipoMovimiento } from "@/lib/services/intento-service"
 import { CompetenciaService, Competencia } from "@/lib/services/competencia-service"
 import { Participante } from "@/lib/services/participante-service"
+import { IntentoEditDialog } from "@/components/admin/intento-edit-dialog"
 
 // Extended Intento type to include optional Relation
 interface IntentoWithParticipante extends Intento {
@@ -38,6 +49,13 @@ function AdminIntentosContent() {
     const [competencias, setCompetencias] = useState<Competencia[]>([])
     const [selectedCompetencia, setSelectedCompetencia] = useState<string>(initialCompetitionId || "all")
     const [loading, setLoading] = useState(false)
+
+    // Edit/Create dialog states
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [editingIntento, setEditingIntento] = useState<IntentoWithParticipante | undefined>(undefined)
+
+    // Delete confirmation
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
     const fetchCompetencias = async () => {
         try {
@@ -76,6 +94,30 @@ function AdminIntentosContent() {
         fetchIntentos()
     }, [fetchIntentos])
 
+    const handleEdit = (intento: IntentoWithParticipante) => {
+        setEditingIntento(intento)
+        setIsEditDialogOpen(true)
+    }
+
+    const handleCreate = () => {
+        setEditingIntento(undefined)
+        setIsEditDialogOpen(true)
+    }
+
+    const handleDelete = async () => {
+        if (!deletingId) return
+        try {
+            await IntentoService.delete(deletingId)
+            toast.success("Intento eliminado")
+            fetchIntentos()
+        } catch (error: any) {
+            console.error(error)
+            toast.error(error.message || "Error al eliminar intento")
+        } finally {
+            setDeletingId(null)
+        }
+    }
+
     return (
         <div className="container mx-auto py-10 space-y-8">
             <div className="flex items-center justify-between">
@@ -92,6 +134,10 @@ function AdminIntentosContent() {
                             Volver a Participantes
                         </Button>
                     </Link>
+                    <Button variant="default" size="sm" className="gap-2" onClick={handleCreate}>
+                        <Plus className="h-4 w-4" />
+                        Nuevo Intento
+                    </Button>
                     <Button variant="secondary" size="icon" onClick={fetchIntentos} title="Recargar">
                         <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     </Button>
@@ -128,12 +174,13 @@ function AdminIntentosContent() {
                             <TableHead>Número</TableHead>
                             <TableHead>Peso (kg)</TableHead>
                             <TableHead>Resultado</TableHead>
+                            <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {intentos.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                                     {loading ? "Cargando..." : "No hay intentos registrados."}
                                 </TableCell>
                             </TableRow>
@@ -148,8 +195,8 @@ function AdminIntentosContent() {
                                     </TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded text-xs font-bold ${intento.tipo === TipoMovimiento.SENTADILLA ? "bg-red-100 text-red-700" :
-                                                intento.tipo === TipoMovimiento.BANCA ? "bg-blue-100 text-blue-700" :
-                                                    "bg-green-100 text-green-700"
+                                            intento.tipo === TipoMovimiento.BANCA ? "bg-blue-100 text-blue-700" :
+                                                "bg-green-100 text-green-700"
                                             }`}>
                                             {intento.tipo}
                                         </span>
@@ -158,11 +205,32 @@ function AdminIntentosContent() {
                                     <TableCell>{intento.peso}</TableCell>
                                     <TableCell>
                                         <span className={`px-2 py-1 rounded text-xs font-bold ${intento.resultado === ResultadoIntento.EXITO ? "bg-green-100 text-green-800" :
-                                                intento.resultado === ResultadoIntento.FALLO ? "bg-red-100 text-red-800" :
-                                                    "bg-yellow-100 text-yellow-800"
+                                            intento.resultado === ResultadoIntento.FALLO ? "bg-red-100 text-red-800" :
+                                                "bg-yellow-100 text-yellow-800"
                                             }`}>
                                             {intento.resultado}
                                         </span>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleEdit(intento)}
+                                                title="Editar"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="text-destructive hover:text-destructive"
+                                                onClick={() => setDeletingId(intento.id)}
+                                                title="Eliminar"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -170,6 +238,33 @@ function AdminIntentosContent() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Edit/Create Dialog */}
+            <IntentoEditDialog
+                open={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                intento={editingIntento}
+                competenciaId={selectedCompetencia !== "all" ? parseInt(selectedCompetencia) : undefined}
+                onSuccess={fetchIntentos}
+            />
+
+            {/* Delete Confirmation */}
+            <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el intento.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                            Eliminar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     )
 }

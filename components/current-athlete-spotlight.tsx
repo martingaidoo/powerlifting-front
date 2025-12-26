@@ -46,9 +46,8 @@ export function CurrentAthleteSpotlight({
 
   return (
     <div
-      className={`relative p-8 lg:p-12 border-2 border-primary bg-gradient-to-b from-primary/10 to-background transition-all duration-700 ${
-        isEntering ? "opacity-0 scale-95 translate-y-8" : "opacity-100 scale-100 translate-y-0"
-      }`}
+      className={`relative p-8 lg:p-12 border-2 border-primary bg-gradient-to-b from-primary/10 to-background transition-all duration-700 ${isEntering ? "opacity-0 scale-95 translate-y-8" : "opacity-100 scale-100 translate-y-0"
+        }`}
     >
       {/* Glow effect */}
       <div className="absolute inset-0 animate-pulse-glow pointer-events-none opacity-50" />
@@ -105,27 +104,25 @@ export function CurrentAthleteSpotlight({
         {currentAttempts.map((attempt, idx) => (
           <div
             key={idx}
-            className={`px-6 py-3 border-2 transition-all ${
-              idx === currentRound - 1
+            className={`px-6 py-3 border-2 transition-all ${idx === currentRound - 1
                 ? "border-primary bg-primary/20 scale-110"
                 : attempt.status === "valid"
                   ? "border-accent/50 bg-accent/10"
                   : attempt.status === "invalid"
                     ? "border-destructive/50 bg-destructive/10"
                     : "border-border/30"
-            }`}
+              }`}
           >
             <div className="text-xs text-muted-foreground">Intento {idx + 1}</div>
             <div
-              className={`text-xl font-bold ${
-                attempt.status === "valid"
+              className={`text-xl font-bold ${attempt.status === "valid"
                   ? "text-accent"
                   : attempt.status === "invalid"
                     ? "text-destructive"
                     : idx === currentRound - 1
                       ? "text-primary"
                       : "text-muted-foreground"
-              }`}
+                }`}
             >
               {attempt.weight} kg
             </div>
