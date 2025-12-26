@@ -82,16 +82,33 @@ function mapAttempts(
                 planIndex++
             }
         } else {
-            // Show current planned weight
-            let weight = 0
+            // Calculate candidate weight based on current plan cursor
+            let candidateWeight = 0
             if (plan) {
-                if (planIndex === 1) weight = Number(plan.peso1)
-                else if (planIndex === 2) weight = Number(plan.peso2)
-                else if (planIndex === 3) weight = Number(plan.peso3)
-                else weight = Number(plan.peso3) // Cap at max
+                if (planIndex === 1) candidateWeight = Number(plan.peso1)
+                else if (planIndex === 2) candidateWeight = Number(plan.peso2)
+                else if (planIndex === 3) candidateWeight = Number(plan.peso3)
+                else candidateWeight = Number(plan.peso3)
             }
 
-            attempts.push({ weight, status: "pending" })
+            // Apply Rules based on Previous Attempt
+            // attempts array is 0-indexed, so attempt 1 is at index 0
+            const prevAttempt = i > 1 ? attempts[i - 2] : null
+            let finalWeight = candidateWeight
+
+            if (prevAttempt) {
+                if (prevAttempt.status === 'invalid') {
+                    // Rule 1: Failure -> Repeat Weight
+                    finalWeight = prevAttempt.weight
+                } else if (prevAttempt.status === 'valid') {
+                    // Rule 2: Success -> Minimum +2.5kg increase
+                    if (finalWeight < prevAttempt.weight + 2.5) {
+                        finalWeight = prevAttempt.weight + 2.5
+                    }
+                }
+            }
+
+            attempts.push({ weight: finalWeight, status: "pending" })
 
             // For visualization of *future* pending boxes, assume success on this one
             planIndex++
